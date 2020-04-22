@@ -1,8 +1,10 @@
-from distutils.core import setup
+#from distutils.core import setup
+from setuptools import setup, find_packages
 setup(
-  name = 'Casambi',
-  packages = ['casambi'],
-  version = '0.01',
+  name = 'casambi',
+  packages = find_packages('src'),
+  package_dir = {'': 'src'},
+  version = '0.0122',
   license='MIT',
   description = 'Library to control Casambi light through cloudapi',
   author = 'Olof Hellqvist',
@@ -10,11 +12,17 @@ setup(
   url = 'https://github.com/olofhellqvist/casambi',
   download_url = 'https://github.com/olofhellqvist/casambi/archive/v_01.tar.gz',
   keywords = ['casambi', 'light'],
+  python_requires='>=3.6',
   install_requires=[
           'requests',
           'websocket',
           'pyyaml'
       ],
+  extras_require={
+        'tests': [
+            'pyyaml',
+        ]
+    },
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
