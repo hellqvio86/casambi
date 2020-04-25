@@ -11,9 +11,7 @@ Python library for controlling Casambi via Cloud API
 Install this library through pip: pip install casambi
 
 ## Example Code block 1
-_______
-.. code-block:: python
-
+```python
 
   api_key = 'REPLACEME'
   email = 'replaceme@replace.com'
@@ -44,7 +42,7 @@ _______
       casambi.turn_scene_off(scene_id=1, web_sock=web_sock, wire_id=1)
 
       casambi.ws_close_message(web_sock=web_sock)
-
+```
 
 ## Authors
 
