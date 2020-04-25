@@ -1,6 +1,5 @@
-*********************************************
 # Python library for controlling Casambi lights
-*********************************************
+
 Python library for controlling Casambi via Cloud API
 
 ## Getting Started
