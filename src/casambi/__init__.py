@@ -69,6 +69,10 @@ def get_network_information(*, user_session_id, network_id, api_key):
 
     data = r.json()
 
+    _LOGGER.debug("get_network_information: headers: {} response: {}".format(headers, data))
+
+    return data
+
 
 def ws_open_message(*, user_session_id, network_id, api_key, wire_id=1):
     '''

@@ -46,10 +46,17 @@ def main():
     network_ids = casambi.create_network_session(api_key=api_key, email=email, network_password=network_password)
 
     for network_id in network_ids:
-        casambi.get_network_information(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
+        network_information = casambi.get_network_information(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
+        print("network_information: {}".format(network_information))
+
         web_sock = casambi.ws_open_message(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
+        print("Turn unit on!")
         casambi.turn_unit_on(unit_id=1, web_sock=web_sock, wire_id=1)
         time.sleep(5)
+
+        network_information = casambi.get_network_information(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
+        print("network_information: {}".format(network_information))
+
         casambi.turn_unit_off(unit_id=1, web_sock=web_sock, wire_id=1)
         units = casambi.get_unit_list(api_key=api_key, network_id=network_id, user_session_id=user_session_id)
 

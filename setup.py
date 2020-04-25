@@ -4,7 +4,7 @@ setup(
   name = 'casambi',
   packages = find_packages('src'),
   package_dir = {'': 'src'},
-  version = '0.0123',
+  version = '0.0125',
   license='MIT',
   description = 'Library to control Casambi light through cloudapi',
   author = 'Olof Hellqvist',
@@ -15,7 +15,7 @@ setup(
   python_requires='>=3.6',
   install_requires=[
           'requests',
-          'websocket',
+          'websocket-client',
           'pyyaml'
       ],
   extras_require={
