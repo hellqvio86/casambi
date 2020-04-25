@@ -8,7 +8,10 @@ Python library for controlling Casambi via Cloud API
 2. Setup a site in Casambi app: http://support.casambi.com/support/solutions/articles/12000041325-how-to-create-a-site
 
 ## Installating
-Install this library through pip: pip install casambi
+Install this library through pip: 
+```
+pip install casambi
+```
 
 ## Example Code block 1
 ```python
