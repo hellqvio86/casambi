@@ -13,6 +13,9 @@ Install this library through pip: pip install casambi
 ## Example Code block 1
 ```python
 
+  import casambi
+  import time
+
   api_key = 'REPLACEME'
   email = 'replaceme@replace.com'
   network_password = 'REPLACEME'
