@@ -51,13 +51,13 @@ def main():
 
         web_sock = casambi.ws_open_message(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
         print("Turn unit on!")
-        casambi.turn_unit_on(unit_id=1, web_sock=web_sock, wire_id=1)
-        time.sleep(5)
+        casambi.turn_unit_on(unit_id=12, web_sock=web_sock, wire_id=1)
+        time.sleep(60)
 
         network_information = casambi.get_network_information(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
         print("network_information: {}".format(network_information))
 
-        casambi.turn_unit_off(unit_id=1, web_sock=web_sock, wire_id=1)
+        casambi.turn_unit_off(unit_id=12, web_sock=web_sock, wire_id=1)
         units = casambi.get_unit_list(api_key=api_key, network_id=network_id, user_session_id=user_session_id)
 
         print("units: {}".format(units))

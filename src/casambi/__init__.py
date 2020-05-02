@@ -5,6 +5,9 @@ import websocket
 import json
 import logging
 import datetime
+import re
+import socket
+
 
 # https://developer.casambi.com/
 
@@ -111,6 +114,17 @@ def ws_open_message(*, user_session_id, network_id, api_key, wire_id=1):
 
 
 def turn_unit_off(*, web_sock, unit_id, wire_id=1):
+    # Unit_id needs to be an integer
+    if isinstance(unit_id, int):
+        pass
+    elif isinstance(unit_id, str):
+        unit_id = int(unit_id)
+    elif isinstance(unit_id, float):
+        unit_id = int(unit_id)
+    else:
+        raise CasambiApiException("expected unit_id to be an integer, got: {}".format(unit_id))
+
+
     target_controls = { 'Dimmer': {'value': 0 }}
 
     message = {
@@ -122,18 +136,22 @@ def turn_unit_off(*, web_sock, unit_id, wire_id=1):
 
     web_sock.send(json.dumps(message))
 
-    result = web_sock.recv()
-
-    data = json.loads(result)
-
-    print("turn_unit_off: message: {}, response:{}".format(message, data))
-
 
 def turn_unit_on(*, web_sock, unit_id, wire_id=1):
     '''
     Response on ok:
     {'wire': 1, 'method': 'peerChanged', 'online': True}
     '''
+    # Unit_id needs to be an integer
+    if isinstance(unit_id, int):
+        pass
+    elif isinstance(unit_id, str):
+        unit_id = int(unit_id)
+    elif isinstance(unit_id, float):
+        unit_id = int(unit_id)
+    else:
+        raise CasambiApiException("expected unit_id to be an integer, got: {}".format(unit_id))
+
     target_controls = { 'Dimmer': {'value': 1 }}
 
     message = {
@@ -145,9 +163,32 @@ def turn_unit_on(*, web_sock, unit_id, wire_id=1):
 
     web_sock.send(json.dumps(message))
 
-    result = web_sock.recv()
 
-    data = json.loads(result)
+def set_unit_value(*, web_sock, unit_id, value, wire_id=1):
+    '''
+    Response on ok:
+    {'wire': 1, 'method': 'peerChanged', 'online': True}
+    '''
+    # Unit_id needs to be an integer
+    if isinstance(unit_id, int):
+        pass
+    elif isinstance(unit_id, str):
+        unit_id = int(unit_id)
+    elif isinstance(unit_id, float):
+        unit_id = int(unit_id)
+    else:
+        raise CasambiApiException("expected unit_id to be an integer, got: {}".format(unit_id))
+
+    target_controls = { 'Dimmer': {'value': value }}
+
+    message = {
+        "wire": wire_id,
+        "method": 'controlUnit',
+        "id": unit_id,
+        "targetControls": target_controls
+    }
+
+    web_sock.send(json.dumps(message))
 
 
 def turn_scene_off(*, scene_id, web_sock, wire_id=1):
@@ -155,6 +196,16 @@ def turn_scene_off(*, scene_id, web_sock, wire_id=1):
     Response on ok:
     {'wire': 1, 'method': 'peerChanged', 'online': True}
     '''
+    # Unit_id needs to be an integer
+    if isinstance(scene_id, int):
+        pass
+    elif isinstance(scene_id, str):
+        scene_id = int(scene_id)
+    elif isinstance(scene_id, float):
+        scene_id = int(scene_id)
+    else:
+        raise CasambiApiException("expected scene_id to be an integer, got: {}".format(scene_id))
+
     value = 0
 
     message = {
@@ -166,16 +217,22 @@ def turn_scene_off(*, scene_id, web_sock, wire_id=1):
 
     web_sock.send(json.dumps(message))
 
-    result = web_sock.recv()
-
-    data = json.loads(result)
-
 
 def turn_scene_on(*, scene_id, web_sock, wire_id=1):
     '''
     Response on ok:
     {'wire': 1, 'method': 'peerChanged', 'online': True}
     '''
+    # Unit_id needs to be an integer
+    if isinstance(scene_id, int):
+        pass
+    elif isinstance(scene_id, str):
+        scene_id = int(scene_id)
+    elif isinstance(scene_id, float):
+        scene_id = int(scene_id)
+    else:
+        raise CasambiApiException("expected scene_id to be an integer, got: {}".format(scene_id))
+
     value = 1
 
     message = {
@@ -186,10 +243,6 @@ def turn_scene_on(*, scene_id, web_sock, wire_id=1):
     }
 
     web_sock.send(json.dumps(message))
-
-    result = web_sock.recv()
-
-    data = json.loads(result)
 
 
 def get_unit_list(*, api_key, network_id, user_session_id):
@@ -250,7 +303,7 @@ def get_fixture_information(*, api_key, session_id, unit_id):
     return data
 
 
-def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0):
+def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0, api_key, user_session_id, network_id):
     '''
     sensorType: [0 = Casambi | 1 = Vendor]
     from: yyyyMMdd[hh[mm[ss]]]
@@ -267,16 +320,9 @@ def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0):
         to_time = now.strftime("%Y%m%d%H%M")
 
     if not from_time:
-        from_time = (now - timedelta(days=7)).strftime("%Y%m%d%H%M")
+        from_time = (now - datetime.timedelta(days=7)).strftime("%Y%m%d%H%M")
 
-    print("from_time: {}".format(from_time))
-    print("to_time: {}".format(to_time))
-    print("sensor_type: {}".format(sensor_type))
-
-    #url = "https://door.casambi.com/v1/networks/{}/datapoints?sensorType={}&from={}&to={}" % (self.network_id, sensor_type, from_time, to_time)
-    url = 'https://door.casambi.com/v1/networks/' + str(self.network_id) + '/datapoints?sensorType=' + str(sensor_type) + '&from=' + from_time + '&to=' + to_time
-
-    print("url: {}".format(url))
+    url = 'https://door.casambi.com/v1/networks/' + str(network_id) + '/datapoints?sensorType=' + str(sensor_type) + '&from=' + from_time + '&to=' + to_time
 
     r = requests.get(url, headers=headers)
 
@@ -291,6 +337,45 @@ def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0):
     return data
 
 
+def ws_recieve_message(*, web_sock):
+    '''
+    Response on success?
+    {'wire': 1, 'method': 'peerChanged', 'online': True}
+    '''
+
+    result = web_sock.recv()
+
+    data = json.loads(result)
+
+    return data
+
+def ws_recieve_messages(*, web_sock):
+    '''
+    Response on success?
+    {'wire': 1, 'method': 'peerChanged', 'online': True}
+    '''
+    messages = []
+
+    while(True):
+
+        result = web_sock.recv()
+
+        data = json.loads(result)
+
+        try:
+            casambi_msg = web_sock.recv()
+            data = json.loads(casambi_msg)
+
+            messages.append(data)
+        except websocket._exceptions.WebSocketConnectionClosedException:
+            break
+        except socket.timeout:
+            break
+        except websocket._exceptions.WebSocketTimeoutException:
+            break
+    return messages
+
+
 def ws_close_message(*, web_sock, wire_id=1):
     '''
     Response on success?
@@ -303,9 +388,3 @@ def ws_close_message(*, web_sock, wire_id=1):
     }
 
     web_sock.send(json.dumps(message))
-
-    result = web_sock.recv()
-
-    data = json.loads(result)
-
-    return
