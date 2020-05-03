@@ -123,11 +123,11 @@ class Casambi(object):
             "type": 1  # Client type, use value 1 (FRONTEND)
         }
 
-        web_sock = websocket.create_connection(
+        self.web_sock = websocket.create_connection(
             url, subprotocols=[self.api_key])
-        web_sock.send(json.dumps(message))
+        self.web_sock.send(json.dumps(message))
 
-        result = web_sock.recv()
+        result = self.web_sock.recv()
 
         data = json.loads(result)
 
@@ -135,8 +135,6 @@ class Casambi(object):
             reason = "ws_open_message: url: {} message: {} reason: \"failed with to open wire!\" response: {}".format(
                 url, message, data)
             raise CasambiApiException(reason)
-
-        self.web_sock = web_sock
 
         return
 
@@ -188,7 +186,7 @@ class Casambi(object):
             "targetControls": target_controls
         }
 
-        web_sock.send(json.dumps(message))
+        self.web_sock.send(json.dumps(message))
 
     def set_unit_value(self, *, unit_id, value):
         '''
