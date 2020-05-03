@@ -23,30 +23,32 @@ pip install casambi
   network_password = 'REPLACEME'
   user_password = 'REPLACEME'
 
-  user_session_id = casambi.create_user_session(email=email, api_key=api_key, user_password=user_password)
-  network_ids = casambi.create_network_session(api_key=api_key, email=email, network_password=network_password)
+  worker = casambi.Casambi(api_key=api_key, email=email, user_password=user_password, network_password=network_password)
+  worker.create_user_session()
+  worker.create_network_session()
+  worker.ws_open()
 
-  for network_id in network_ids:
-      casambi.get_network_information(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
-      web_sock = casambi.ws_open_message(user_session_id=user_session_id, network_id=network_id, api_key=api_key)
-      casambi.turn_unit_on(unit_id=1, web_sock=web_sock, wire_id=1)
-      time.sleep(5)
-      casambi.turn_unit_off(unit_id=1, web_sock=web_sock, wire_id=1)
-      units = casambi.get_unit_list(api_key=api_key, network_id=network_id, user_session_id=user_session_id)
+  print("Turn unit on!")
+  worker.turn_unit_on(unit_id=1)
+  time.sleep(60)
 
-      print("units: {}".format(units))
+  print("Turn unit off!")
+  worker.turn_unit_off(unit_id=1)
+  time.sleep(60)
 
-      scenes = casambi.get_scenes_list(api_key=api_key, network_id=network_id, user_session_id=user_session_id)
+  units = worker.get_unit_list()
 
-      print("scenes: {}".format(units))
+  print("units: {}".format(units))
 
-      print("Scene on!")
-      casambi.turn_scene_on(scene_id=1, web_sock=web_sock, wire_id=1)
-      time.sleep(60)
-      print("Scene off!")
-      casambi.turn_scene_off(scene_id=1, web_sock=web_sock, wire_id=1)
+  scenes = worker.get_scenes_list()
 
-      casambi.ws_close_message(web_sock=web_sock)
+  print("Scene on!")
+  worker.turn_scene_on(scene_id=1)
+  time.sleep(60)
+  print("Scene off!")
+  worker.turn_scene_off(scene_id=1)
+
+  worker.ws_close()
 ```
 
 ## Authors
