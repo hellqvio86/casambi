@@ -4,7 +4,7 @@ setup(
   name = 'casambi',
   packages = find_packages('src'),
   package_dir = {'': 'src'},
-  version = '0.0134',
+  version = '0.0135',
   license='MIT',
   description = 'Library to control Casambi light through cloudapi',
   author = 'Olof Hellqvist',
