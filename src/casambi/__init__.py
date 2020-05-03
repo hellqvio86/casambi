@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+'''
+Library for Casambi Cloud api.
+Request api_key at: https://developer.casambi.com/
+'''
 import requests
 import uuid
 import websocket
@@ -7,9 +11,6 @@ import logging
 import datetime
 import re
 import socket
-
-
-# https://developer.casambi.com/
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class Casambi(object):
         self.network_id = None
         self.user_session_id = None
 
-        self.wire_id = self.wire_id
+        self.wire_id = wire_id
         self.api_key = api_key
         self.email = email
         self.user_password = user_password
@@ -45,14 +46,14 @@ class Casambi(object):
 
         payload = {"email": self.email, "password": self.user_password}
 
-        r = requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "create_user_session: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, payload, r.status_code, r.text)
+                headers, payload, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         self.user_session_id = data['sessionId']
 
@@ -65,14 +66,14 @@ class Casambi(object):
 
         payload = {"email": self.email, "password": self.network_password}
 
-        r = requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "create_network_session: failed with status_code: {}, response: {}".format(
-                r.status_code, r.text)
+                response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         self.network_id = list(data.keys())[0]
 
@@ -86,14 +87,14 @@ class Casambi(object):
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
 
-        r = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "get_network_information: url: {} failed with status_code: {}, response: {}".format(
-                url, r.status_code, r.text)
+                url, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         _LOGGER.debug(
             "get_network_information: headers: {} response: {}".format(headers, data))
@@ -280,14 +281,14 @@ class Casambi(object):
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
 
-        r = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, r.status_code, r.text)
+                headers, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         _LOGGER.debug(
             "get_network_unit_list: headers: {} response: {}".format(headers, data))
@@ -301,14 +302,14 @@ class Casambi(object):
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
 
-        r = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, r.status_code, r.text)
+                headers, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         _LOGGER.debug(
             "get_scenes_list: headers: {} response: {}".format(headers, data))
@@ -325,14 +326,14 @@ class Casambi(object):
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
 
-        r = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "get_fixture_information: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, r.status_code, r.text)
+                headers, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         _LOGGER.debug(
             "get_fixture_information: headers: {} response: {}".format(headers, data))
@@ -364,14 +365,14 @@ class Casambi(object):
             str(self.network_id) + '/datapoints?sensorType=' + \
             str(sensor_type) + '&from=' + from_time + '&to=' + to_time
 
-        r = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
 
-        if r.status_code != 200:
+        if response.status_code != 200:
             reason = "get_network_datapoints: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, r.status_code, r.text)
+                headers, response.status_code, response.text)
             raise CasambiApiException(reason)
 
-        data = r.json()
+        data = response.json()
 
         _LOGGER.debug(
             "get_network_datapoints\nheaders: {}\nresponse: {}".format(headers, data))
@@ -433,13 +434,13 @@ def create_user_session(*, api_key, email, user_password):
 
     payload = {"email": email, "password": user_password}
 
-    r = requests.post(url, json=payload, headers=headers)
-    if r.status_code != 200:
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code != 200:
         reason = "create_user_session: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-            headers, payload, r.status_code, r.text)
+            headers, payload, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     return data['sessionId']
 
@@ -450,14 +451,14 @@ def create_network_session(*, api_key, email, network_password):
 
     payload = {"email": email, "password": network_password}
 
-    r = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "create_network_session: failed with status_code: {}, response: {}".format(
-            r.status_code, r.text)
+            response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     return data.keys()
 
@@ -470,14 +471,14 @@ def get_network_information(*, user_session_id, network_id, api_key):
     headers = {'X-Casambi-Key': api_key, 'X-Casambi-Session': user_session_id,
                'Content-type': 'application/json', }
 
-    r = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "get_network_information: url: {} failed with status_code: {}, response: {}".format(
-            url, r.status_code, r.text)
+            url, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     _LOGGER.debug(
         "get_network_information: headers: {} response: {}".format(headers, data))
@@ -664,14 +665,14 @@ def get_unit_list(*, api_key, network_id, user_session_id):
     headers = {'X-Casambi-Key': api_key, 'X-Casambi-Session': user_session_id,
                'Content-type': 'application/json', }
 
-    r = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-            headers, r.status_code, r.text)
+            headers, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     _LOGGER.debug(
         "get_network_unit_list: headers: {} response: {}".format(headers, data))
@@ -685,14 +686,14 @@ def get_scenes_list(*, api_key, network_id, user_session_id):
     headers = {'X-Casambi-Key': api_key, 'X-Casambi-Session': user_session_id,
                'Content-type': 'application/json', }
 
-    r = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-            headers, r.status_code, r.text)
+            headers, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     _LOGGER.debug(
         "get_scenes_list: headers: {} response: {}".format(headers, data))
@@ -710,14 +711,14 @@ def get_fixture_information(*, api_key, user_session_id, unit_id):
     headers = {'X-Casambi-Key': api_key, 'X-Casambi-Session': user_session_id,
                'Content-type': 'application/json', }
 
-    r = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "get_fixture_information: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-            headers, r.status_code, r.text)
+            headers, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     _LOGGER.debug(
         "get_fixture_information: headers: {} response: {}".format(headers, data))
@@ -749,14 +750,14 @@ def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0, api_k
         str(network_id) + '/datapoints?sensorType=' + \
         str(sensor_type) + '&from=' + from_time + '&to=' + to_time
 
-    r = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         reason = "get_network_datapoints: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-            headers, r.status_code, r.text)
+            headers, response.status_code, response.text)
         raise CasambiApiException(reason)
 
-    data = r.json()
+    data = response.json()
 
     _LOGGER.debug(
         "get_network_datapoints\nheaders: {}\nresponse: {}".format(headers, data))
