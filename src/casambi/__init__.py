@@ -738,7 +738,7 @@ def get_network_datapoints(*, from_time=None, to_time=None, sensor_type=0, api_k
     if not (sensor_type == 0 or sensor_type == 1):
         raise CasambiApiException('invalid sentor_type')
 
-    now = datetime.now()
+    now = datetime.datetime.now()
 
     if not to_time:
         to_time = now.strftime("%Y%m%d%H%M")
@@ -785,7 +785,7 @@ def ws_recieve_messages(*, web_sock):
     '''
     messages = []
 
-    while(True):
+    while True:
 
         result = web_sock.recv()
 
