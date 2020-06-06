@@ -23,7 +23,8 @@ pip install casambi
   network_password = 'REPLACEME'
   user_password = 'REPLACEME'
 
-  worker = casambi.Casambi(api_key=api_key, email=email, user_password=user_password, network_password=network_password)
+  worker = casambi.Casambi(api_key=api_key, email=email, \
+    user_password=user_password, network_password=network_password)
   worker.create_user_session()
   worker.create_network_session()
   worker.ws_open()
