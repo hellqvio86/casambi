@@ -103,6 +103,29 @@ class Casambi(object):
 
         return data
 
+    def get_unit_state(self, unit_id):
+        # GET https://door.casambi.com/v1/networks/{id}
+
+        url = "https://door.casambi.com/v1/networks/{}/units/{}/state".format(self.network_id, unit_id)
+
+        headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
+                   self.user_session_id, 'Content-type': 'application/json', }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            reason = "get_unit_state: url: {}".format(url)
+            reason += "failed with status_code: {},".format(response.status_code)
+            reason += "response: {}".format(response.text)
+            raise CasambiApiException(reason)
+
+        data = response.json()
+
+        _LOGGER.debug(
+            "get_unit_state: headers: {} response: {}".format(headers, data))
+
+        return data
+
     def ws_open(self):
         '''
         openWireSucceed         API key authentication failed. Either given key was
@@ -209,6 +232,34 @@ class Casambi(object):
 
         self.web_sock.send(json.dumps(message))
 
+    def set_unit_targetControls(self, *, unit_id, targetControls):
+        '''
+        Response on ok:
+        {'wire': 1, 'method': 'peerChanged', 'online': True}
+        '''
+        # Unit_id needs to be an integer
+        if isinstance(unit_id, int):
+            pass
+        elif isinstance(unit_id, str):
+            unit_id = int(unit_id)
+        elif isinstance(unit_id, float):
+            unit_id = int(unit_id)
+        else:
+            raise CasambiApiException(
+                "expected unit_id to be an integer, got: {}".format(unit_id))
+
+        if not self.web_sock:
+            raise CasambiApiException('No websocket connection!')
+
+        message = {
+            "wire": self.wire_id,
+            "method": 'controlUnit',
+            "id": unit_id,
+            "targetControls": targetControls
+        }
+
+        self.web_sock.send(json.dumps(message))
+
     def set_unit_value(self, *, unit_id, value):
         '''
         Response on ok:
@@ -230,6 +281,7 @@ class Casambi(object):
 
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
+
 
         target_controls = {'Dimmer': {'value': value}}
 
