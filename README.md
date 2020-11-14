@@ -51,6 +51,10 @@ pip install casambi
 
   worker.ws_close()
 ```
+## Other Casambi projects
+* https://github.com/hellqvio86/aiocasambi - Asynchronous I/O version of this library
+* https://github.com/hellqvio86/home_assistant_casambi - Home Assistant Plugin for Casambi
+* https://github.com/awahlig/homebridge-casambi Homebridge plugin for Casambi
 
 ## Authors
 
