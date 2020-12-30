@@ -420,6 +420,26 @@ class Casambi(object):
 
         return data
 
+    def get_network_state(self):
+        url = f"{self.rest_url}/networks/{self.network_id}/state"
+
+        headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
+                   self.user_session_id, 'Content-type': 'application/json', }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            reason = "get_network_state: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
+                headers, response.status_code, response.text)
+            raise CasambiApiException(reason)
+
+        data = response.json()
+
+        _LOGGER.debug(
+            "get_network_state: headers: {} response: {}".format(headers, data))
+
+        return data
+
     def get_network_datapoints(self, *, from_time=None, to_time=None, sensor_type=0):
         '''
         sensorType: [0 = Casambi | 1 = Vendor]
