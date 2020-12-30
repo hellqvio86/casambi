@@ -419,6 +419,26 @@ class Casambi(object):
             "get_fixture_information: headers: {} response: {}".format(headers, data))
 
         return data
+    
+    def get_unit_state(self, *, unit_id):
+        url = f"{self.rest_url}/networks/{self.network_id}/units/{unit_id}/state"
+
+        headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
+                   self.user_session_id, 'Content-type': 'application/json', }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            reason = "get_unit_state: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
+                headers, response.status_code, response.text)
+            raise CasambiApiException(reason)
+
+        data = response.json()
+
+        _LOGGER.debug(
+            "get_unit_state: headers: {} response: {}".format(headers, data))
+
+        return data
 
     def get_network_state(self):
         url = f"{self.rest_url}/networks/{self.network_id}/state"
