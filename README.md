@@ -1,4 +1,4 @@
-![PyPI](https://img.shields.io/pypi/v/casambi)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/casambi) ![PyPI](https://img.shields.io/pypi/v/casambi)
 
 # Python library for controlling Casambi lights
 
