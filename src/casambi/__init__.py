@@ -3,14 +3,13 @@
 Library for Casambi Cloud api.
 Request api_key at: https://developer.casambi.com/
 '''
-import requests
 import uuid
-import websocket
 import json
 import logging
 import datetime
 import socket
-
+import requests
+import websocket
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -22,7 +21,11 @@ class ConfigException(Exception):
     """Custom exception"""
 
 
-class Casambi(object):
+class Casambi:
+    '''
+    Casambi api object
+    '''
+
     def __init__(self, *,
                  api_key,
                  email,
@@ -30,6 +33,7 @@ class Casambi(object):
                  network_password,
                  wire_id=1):
         self.sock = None
+        self.web_sock = None
 
         self.connected = False
         self.network_id = None
@@ -42,6 +46,9 @@ class Casambi(object):
         self.network_password = network_password
 
     def create_user_session(self):
+        '''
+        Function for creating a user session in Casambis cloud api
+        '''
         url = 'https://door.casambi.com/v1/users/session/'
         headers = {'Content-type': 'application/json',
                    'X-Casambi-Key': self.api_key}
@@ -65,6 +72,9 @@ class Casambi(object):
         return data['sessionId']
 
     def create_network_session(self):
+        '''
+        Function for creating a network session in Casambis cloud api
+        '''
         url = 'https://door.casambi.com/v1/networks/session/'
         headers = {'X-Casambi-Key': self.api_key,
                    'Content-type': 'application/json', }
@@ -87,9 +97,12 @@ class Casambi(object):
         return data.keys()
 
     def get_network_information(self):
+        '''
+        Function for getting the network information from Casambis cloud api
+        '''
         # GET https://door.casambi.com/v1/networks/{id}
 
-        url = "https://door.casambi.com/v1/networks/{}".format(self.network_id)
+        url = f"https://door.casambi.com/v1/networks/{self.network_id}"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -113,10 +126,13 @@ class Casambi(object):
         return data
 
     def get_unit_state(self, *, unit_id):
+        '''
+        Getter for getting the unit state from Casambis cloud api
+        '''
         # GET https://door.casambi.com/v1/networks/{id}
 
-        url = "https://door.casambi.com/v1/networks/{}/units/{}/state".format(
-            self.network_id, unit_id)
+        url = 'https://door.casambi.com/v1/networks/'
+        url += f"{self.network_id}/units/{unit_id}/state"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -132,8 +148,8 @@ class Casambi(object):
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_unit_state: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_unit_state: headers: {headers} response: {data}"
+        _LOGGER.debug(dbg_msg)
 
         return data
 
@@ -187,7 +203,10 @@ class Casambi(object):
 
         return
 
-    def turn_unit_off(self, *, unit_id):
+    def turn_unit_off(self, *, unit_id: int):
+        '''
+        Function for turning a unit of using the websocket
+        '''
         # Unit_id needs to be an integer
         if isinstance(unit_id, int):
             pass
@@ -244,7 +263,7 @@ class Casambi(object):
 
         self.web_sock.send(json.dumps(message))
 
-    def set_unit_targetControls(self, *, unit_id, targetControls):
+    def set_unit_target_controls(self, *, unit_id, target_controls):
         '''
         Response on ok:
         {'wire': 1, 'method': 'peerChanged', 'online': True}
@@ -258,7 +277,7 @@ class Casambi(object):
             unit_id = int(unit_id)
         else:
             raise CasambiApiException(
-                "expected unit_id to be an integer, got: {}".format(unit_id))
+                f"expected unit_id to be an integer, got: {unit_id}")
 
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
@@ -267,12 +286,12 @@ class Casambi(object):
             "wire": self.wire_id,
             "method": 'controlUnit',
             "id": unit_id,
-            "targetControls": targetControls
+            "targetControls": target_controls
         }
 
         self.web_sock.send(json.dumps(message))
 
-    def set_unit_value(self, *, unit_id, value):
+    def set_unit_value(self, *, unit_id: int, value):
         '''
         Response on ok:
         {'wire': 1, 'method': 'peerChanged', 'online': True}
@@ -286,7 +305,7 @@ class Casambi(object):
             unit_id = int(unit_id)
         else:
             raise CasambiApiException(
-                "expected unit_id to be an integer, got: {}".format(unit_id))
+                f"expected unit_id to be an integer, got: {unit_id}")
 
         if not(value >= 0 and value <= 1):
             raise CasambiApiException('value needs to be between 0 and 1')
@@ -305,7 +324,42 @@ class Casambi(object):
 
         self.web_sock.send(json.dumps(message))
 
-    def turn_scene_off(self, *, scene_id):
+    def set_unit_color_temperature(self, *,
+                                   unit_id: int,
+                                   value: int,
+                                   source="TW"):
+        '''
+        Setter for unit color temperature
+        '''
+        # Unit_id needs to be an integer
+        if isinstance(unit_id, int):
+            pass
+        elif isinstance(unit_id, str):
+            unit_id = int(unit_id)
+        elif isinstance(unit_id, float):
+            unit_id = int(unit_id)
+        else:
+            raise CasambiApiException(
+                f"expected unit_id to be an integer, got: {unit_id}")
+
+        if not self.web_sock:
+            raise CasambiApiException('No websocket connection!')
+
+        target_controls = {
+            'ColorTemperature': {'value': value},
+            'Colorsource': {'source': source}
+        }
+
+        message = {
+            "wire": self.wire_id,
+            "method": 'controlUnit',
+            "id": unit_id,
+            "targetControls": target_controls
+        }
+
+        self.web_sock.send(json.dumps(message))
+
+    def turn_scene_off(self, *, scene_id: int):
         '''
         Response on ok:
         {'wire': 1, 'method': 'peerChanged', 'online': True}
@@ -319,7 +373,7 @@ class Casambi(object):
             scene_id = int(scene_id)
         else:
             raise CasambiApiException(
-                "expected scene_id to be an integer, got: {}".format(scene_id))
+                f"expected scene_id to be an integer, got: {scene_id}")
 
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
@@ -349,7 +403,7 @@ class Casambi(object):
             scene_id = int(scene_id)
         else:
             raise CasambiApiException(
-                "expected scene_id to be an integer, got: {}".format(scene_id))
+                f"expected scene_id to be an integer, got: {scene_id}")
 
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
@@ -366,8 +420,11 @@ class Casambi(object):
         self.web_sock.send(json.dumps(message))
 
     def get_unit_list(self):
-        url = "https://door.casambi.com/v1/networks/{}/units".format(
-            self.network_id)
+        '''
+        Getter for unit lists
+        '''
+        url = 'https://door.casambi.com/v1/networks/'
+        url += f"{self.network_id}/units"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -392,8 +449,11 @@ class Casambi(object):
         return data
 
     def get_scenes_list(self):
-        url = "https://door.casambi.com/v1/networks/{}/scenes".format(
-            self.network_id)
+        '''
+        Getter for Scenes list
+        '''
+        url = 'https://door.casambi.com/v1/networks/'
+        url += f"{self.network_id}/scenes"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -410,17 +470,18 @@ class Casambi(object):
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_scenes_list: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_scenes_list: headers: {headers}"
+        dbg_msg += f" response: {data}"
+        _LOGGER.debug(dbg_msg)
 
         return data
 
-    def get_fixture_information(self, *, unit_id):
+    def get_fixture_information(self, *, unit_id: int):
         '''
         GET https://door.casambi.com/v1/fixtures/{id}
         '''
 
-        url = "https://door.casambi.com/v1/fixtures/{}".format(unit_id)
+        url = f"https://door.casambi.com/v1/fixtures/{unit_id}"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -444,7 +505,10 @@ class Casambi(object):
         return data
 
     def get_network_state(self):
-        url = f"{self.rest_url}/networks/{self.network_id}/state"
+        '''
+        Getter for network state
+        '''
+        url = f"https://door.casambi.com/v1/networks/{self.network_id}/state"
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -479,7 +543,7 @@ class Casambi(object):
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
 
-        if not (sensor_type == 0 or sensor_type == 1):
+        if sensor_type not in [0, 1]:
             raise CasambiApiException('invalid sentor_type')
 
         now = datetime.datetime.now()
@@ -546,11 +610,11 @@ class Casambi(object):
                 data = json.loads(casambi_msg)
 
                 messages.append(data)
-            except websocket._exceptions.WebSocketConnectionClosedException:
+            except websocket.WebSocketConnectionClosedException:
                 break
             except socket.timeout:
                 break
-            except websocket._exceptions.WebSocketTimeoutException:
+            except websocket.WebSocketTimeoutException:
                 break
         return messages
 
