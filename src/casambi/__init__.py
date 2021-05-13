@@ -9,7 +9,6 @@ import websocket
 import json
 import logging
 import datetime
-import re
 import socket
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,7 +23,12 @@ class ConfigException(Exception):
 
 
 class Casambi(object):
-    def __init__(self, *, api_key, email, user_password, network_password, wire_id=1):
+    def __init__(self, *,
+                 api_key,
+                 email,
+                 user_password,
+                 network_password,
+                 wire_id=1):
         self.sock = None
 
         self.connected = False
@@ -70,8 +74,10 @@ class Casambi(object):
         response = requests.post(url, json=payload, headers=headers)
 
         if response.status_code != 200:
-            reason = "create_network_session: failed with status_code: {}, response: {}".format(
-                response.status_code, response.text)
+            reason = 'create_network_session: failed with'
+            reason += f"status_code: {response.status_code},"
+            reason += f"response: {response.text}"
+
             raise CasambiApiException(reason)
 
         data = response.json()
@@ -92,21 +98,25 @@ class Casambi(object):
 
         if response.status_code != 200:
             reason = "get_network_information: url: {}".format(url)
-            reason += "failed with status_code: {},".format(response.status_code)
+            reason += "failed with status_code: {},".format(
+                response.status_code)
             reason += "response: {}".format(response.text)
             raise CasambiApiException(reason)
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_network_information: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_network_information: headers: {headers}"
+        dbg_msg += "response: {data}"
+
+        _LOGGER.debug(dbg_msg)
 
         return data
 
-    def get_unit_state(self, unit_id):
+    def get_unit_state(self, *, unit_id):
         # GET https://door.casambi.com/v1/networks/{id}
 
-        url = "https://door.casambi.com/v1/networks/{}/units/{}/state".format(self.network_id, unit_id)
+        url = "https://door.casambi.com/v1/networks/{}/units/{}/state".format(
+            self.network_id, unit_id)
 
         headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
                    self.user_session_id, 'Content-type': 'application/json', }
@@ -115,7 +125,8 @@ class Casambi(object):
 
         if response.status_code != 200:
             reason = "get_unit_state: url: {}".format(url)
-            reason += "failed with status_code: {},".format(response.status_code)
+            reason += "failed with status_code: {},".format(
+                response.status_code)
             reason += "response: {}".format(response.text)
             raise CasambiApiException(reason)
 
@@ -128,22 +139,23 @@ class Casambi(object):
 
     def ws_open(self):
         '''
-        openWireSucceed         API key authentication failed. Either given key was
-        invalid or WebSocket functionality is not enabled for it.
+        openWireSucceed         API key authentication failed. Either given key
+        was invalid or WebSocket functionality is not enabled for it.
 
-        keyAuthenticateFailed	API key authentication failed. Given key was invalid.
+        keyAuthenticateFailed	API key authentication failed. Given key was
+        invalid.
 
         keyAuthorizeFailed	    API key authorize failed. Given key has not been
         authorized or WebSocket functionality is not enabled for it.
 
-        invalidSession	        Either access to given network is not authorized by
-        session or given session is invalid.
+        invalidSession	        Either access to given network is not authorized
+        by session or given session is invalid.
 
         invalidValueType	    Received values are not in correct value type,
         for example when expecting a number but receiving string value instead.
 
-        invalidData	            Received data is invalid and cannot be processed,
-        for example expected list of items is in wrong data format.
+        invalidData	            Received data is invalid and cannot be
+        processed, for example expected list of items is in wrong data format.
         '''
         url = 'wss://door.casambi.com/v1/bridge/'
 
@@ -217,7 +229,7 @@ class Casambi(object):
             reason = 'expected unit_id to be an integer,'
             reason += "got: {}".format(unit_id)
             raise CasambiApiException(reason)
-        
+
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
 
@@ -281,7 +293,6 @@ class Casambi(object):
 
         if not self.web_sock:
             raise CasambiApiException('No websocket connection!')
-
 
         target_controls = {'Dimmer': {'value': value}}
 
@@ -364,14 +375,19 @@ class Casambi(object):
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
+            reason = f"get_network_unit_list: headers: {headers},"
+            reason += 'message: "Got a invalid status_code",'
+            reason += f"status_code: {response.status_cod},"
+            reason += f"response: {response.text}"
+
             raise CasambiApiException(reason)
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_network_unit_list: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_network_unit_list: headers: {headers}"
+        dbg_msg += f"response: {data}"
+
+        _LOGGER.debug(dbg_msg)
 
         return data
 
@@ -385,8 +401,11 @@ class Casambi(object):
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            reason = "get_network_unit_list: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
+            reason = f"get_network_unit_list: headers: {headers},"
+            reason += 'message: "Got a invalid status_code",'
+            reason += f"status_code: {response.status_code},"
+            reason += f"response: {response.text}"
+
             raise CasambiApiException(reason)
 
         data = response.json()
@@ -409,34 +428,18 @@ class Casambi(object):
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            reason = "get_fixture_information: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
+            reason = f"get_fixture_information: headers: {headers},"
+            reason += 'message: "Got a invalid status_code",'
+            reason += f"status_code: {response.status_code},"
+            reason += f"response: {response.text}"
             raise CasambiApiException(reason)
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_fixture_information: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_fixture_information: headers: {headers}"
+        dbg_msg += f" response: {data}"
 
-        return data
-    
-    def get_unit_state(self, *, unit_id):
-        url = f"{self.rest_url}/networks/{self.network_id}/units/{unit_id}/state"
-
-        headers = {'X-Casambi-Key': self.api_key, 'X-Casambi-Session':
-                   self.user_session_id, 'Content-type': 'application/json', }
-
-        response = requests.get(url, headers=headers)
-
-        if response.status_code != 200:
-            reason = "get_unit_state: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
-            raise CasambiApiException(reason)
-
-        data = response.json()
-
-        _LOGGER.debug(
-            "get_unit_state: headers: {} response: {}".format(headers, data))
+        _LOGGER.debug(dbg_msg)
 
         return data
 
@@ -449,18 +452,25 @@ class Casambi(object):
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            reason = "get_network_state: headers: {},  payload: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
+            reason = f"get_network_state: headers: {headers},"
+            reason += 'message: "Got a invalid status_code",'
+            reason += f"status_code: {response.status_code},"
+            reason += f"response: {response.text}"
             raise CasambiApiException(reason)
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_network_state: headers: {} response: {}".format(headers, data))
+        dbg_msg = f"get_network_state: headers: {headers}"
+        dbg_msg = f" response: {data}"
+
+        _LOGGER.debug(dbg_msg)
 
         return data
 
-    def get_network_datapoints(self, *, from_time=None, to_time=None, sensor_type=0):
+    def get_network_datapoints(self, *,
+                               from_time=None,
+                               to_time=None,
+                               sensor_type=0):
         '''
         sensorType: [0 = Casambi | 1 = Vendor]
         from: yyyyMMdd[hh[mm[ss]]]
@@ -488,14 +498,19 @@ class Casambi(object):
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            reason = "get_network_datapoints: headers: {}, message: \"Got a invalid status_code\", status_code: {}, response: {}".format(
-                headers, response.status_code, response.text)
+            reason = f"get_network_datapoints: headers: {headers},"
+            reason += 'message: "Got a invalid status_code",'
+            reason += f"status_code: {response.status_code},"
+            reason += f"response: {response.text}"
+
             raise CasambiApiException(reason)
 
         data = response.json()
 
-        _LOGGER.debug(
-            "get_network_datapoints\nheaders: {}\nresponse: {}".format(headers, data))
+        dbg_msg = f"get_network_datapoints headers: {headers}"
+        dbg_msg += f" response: {data}"
+
+        _LOGGER.debug(dbg_msg)
 
         return data
 
