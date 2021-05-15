@@ -144,6 +144,7 @@ class Casambi:
             reason += "failed with status_code: {},".format(
                 response.status_code)
             reason += "response: {}".format(response.text)
+
             raise CasambiApiException(reason)
 
         data = response.json()
@@ -153,7 +154,7 @@ class Casambi:
 
         return data
 
-    def ws_open(self):
+    def ws_open(self) -> bool:
         '''
         openWireSucceed         API key authentication failed. Either given key
         was invalid or WebSocket functionality is not enabled for it.
@@ -194,14 +195,25 @@ class Casambi:
 
         data = json.loads(result)
 
-        if data['wireStatus'] != 'openWireSucceed':
-            reason = "ws_open_message: url: {},".format(url)
-            reason += "message: {},".format(message)
-            reason += 'reason: "failed with to open wire!"'
-            reason += "response: {}".format(data)
-            raise CasambiApiException(reason)
+        _LOGGER.debug(f"ws_open response: {data}")
 
-        return
+        # Can get what ever like:
+        #  {'wire': 1, 'method': 'peerChanged', 'online': True}
+        #
+        #if data['wireStatus'] != 'openWireSucceed':
+        #    reason = "ws_open_message: url: {},".format(url)
+        #    reason += "message: {},".format(message)
+        #    reason += 'reason: "failed with to open wire!"'
+        #    reason += "response: {}".format(data)
+        #    raise CasambiApiException(reason)
+        if 'wireStatus' in data and data['wireStatus'] == 'openWireSucceed':
+            return True
+        elif (('method' in data) and (data['method'] == 'peerChanged')) and \
+            (('wire' in data) and (data['wire'] == self.wire_id)) and \
+            (('online' in data) and data['online']):
+            return True
+
+        return False
 
     def turn_unit_off(self, *, unit_id: int):
         '''
