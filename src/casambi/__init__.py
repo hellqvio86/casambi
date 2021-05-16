@@ -200,7 +200,7 @@ class Casambi:
         # Can get what ever like:
         #  {'wire': 1, 'method': 'peerChanged', 'online': True}
         #
-        #if data['wireStatus'] != 'openWireSucceed':
+        # if data['wireStatus'] != 'openWireSucceed':
         #    reason = "ws_open_message: url: {},".format(url)
         #    reason += "message: {},".format(message)
         #    reason += 'reason: "failed with to open wire!"'
@@ -210,7 +210,7 @@ class Casambi:
             return True
         elif (('method' in data) and (data['method'] == 'peerChanged')) and \
             (('wire' in data) and (data['wire'] == self.wire_id)) and \
-            (('online' in data) and data['online']):
+                (('online' in data) and data['online']):
             return True
 
         return False
@@ -341,7 +341,7 @@ class Casambi:
                                    value: int,
                                    source="TW"):
         '''
-        Setter for unit color temperature
+        Setter for unit color temperature (kelvin)
         '''
         # Unit_id needs to be an integer
         if isinstance(unit_id, int):
@@ -370,6 +370,53 @@ class Casambi:
         }
 
         self.web_sock.send(json.dumps(message))
+
+    def unit_supports_color_temperature(self, *,
+                                        unit_id: int) -> bool:
+        '''
+        Returns true if unit supports color temperature
+
+        {
+            'activeSceneId': 0,
+            'address': '26925689c64c',
+            'condition': 0,
+            'controls': [[{'type': 'Dimmer', 'value': 0.0},
+                        {'level': 0.49736842105263157,
+                            'max': 6000,
+                            'min': 2200,
+                            'type': 'CCT',
+                            'value': 4090.0}]],
+            'dimLevel': 0.0,
+            'firmwareVersion': '26.24',
+            'fixtureId': 14235,
+            'groupId': 0,
+            'id': 13,
+            'image': 'mbUdKbLz5g3VsVNJIgTYboHa8ce9YfSK',
+            'name': 'Arbetslampa',
+            'on': True,
+            'online': True,
+            'position': 9,
+            'priority': 3,
+            'status': 'ok',
+            'type': 'Luminaire'
+        }
+
+        '''
+
+        data = self.get_unit_state(unit_id=unit_id)
+
+        if 'controls' not in data:
+            return False
+
+        for control in data['controls']:
+            if isinstance(control, list):
+                for inner_control in control:
+                    if 'type' in inner_control and \
+                            inner_control['type'] == 'CCT':
+                        return True
+            if 'type' in control and control['type'] == 'CCT':
+                return True
+        return False
 
     def turn_scene_off(self, *, scene_id: int):
         '''

@@ -38,7 +38,22 @@ def parse_config(config_file='casambi.yaml'):
     return config
 
 
-def main(): 
+def print_unit_information(*, worker: casambi.Casambi, unit_id: int):
+    data = worker.get_fixture_information(unit_id=unit_id)
+    msg = f"Unit fixture information for unit: {unit_id}"
+    msg += f"\n{pformat(data)}\n"
+    print(msg)
+
+    data = worker.get_unit_state(unit_id=unit_id)
+    msg = f"Unit state for unit_id: {unit_id}"
+    msg += f"\n{pformat(data)}\n"
+    print(msg)
+
+    supports_color = worker.unit_supports_color_temperature(unit_id=unit_id)
+    print(f"Does unit support color: {supports_color}")
+
+
+def main():
     verbose = True
     config = parse_config()
 
@@ -46,8 +61,9 @@ def main():
     email = config['email']
     network_password = config['network_password']
     user_password = config['user_password']
-    unit_id = 1
+    units = []
     scene_id = 1
+    unit_id = 1
 
     if 'unit_id' in config:
         unit_id = config['unit_id']
@@ -55,30 +71,46 @@ def main():
     if 'scene_id' in config:
         scene_id = config['scene_id']
 
+    if 'units' in config:
+        units = config['units']
+
     if verbose:
         print("main: config: {}".format(config))
 
+    worker = casambi.Casambi(
+        api_key=api_key,
+        email=email,
+        user_password=user_password,
+        network_password=network_password
+    )
 
-    worker = casambi.Casambi(api_key=api_key, email=email, user_password=user_password, network_password=network_password)
     worker.create_user_session()
     worker.create_network_session()
     worker.ws_open()
 
-    print(f"Turn unit: {unit_id} on!")
-    worker.turn_unit_on(unit_id=unit_id)
-    time.sleep(60)
+    if len(units) == 0:
+        units.append(unit_id)
 
-    print(f"Turn unit: {unit_id} off!")
-    worker.turn_unit_off(unit_id=unit_id)
-    time.sleep(60)
+    for unit_id in units:
+        print_unit_information(worker=worker, unit_id=unit_id)
 
-    units = worker.get_unit_list()
+        print(f"Turn unit: {unit_id} on!")
+        worker.turn_unit_on(unit_id=unit_id)
+        time.sleep(60)
 
-    print(f"units:\n{pformat(units)}")
+        print_unit_information(worker=worker, unit_id=unit_id)
+
+        print(f"Turn unit: {unit_id} off!")
+        worker.turn_unit_off(unit_id=unit_id)
+        time.sleep(60)
+
+    unit_list = worker.get_unit_list()
+
+    print(f"Unit list:\n{pformat(unit_list)}")
 
     scenes = worker.get_scenes_list()
 
-    print(f"scenes:\n{pformat(scenes)}")
+    print(f"Scenes:\n{pformat(scenes)}")
 
     print("Scene on!")
     worker.turn_scene_on(scene_id=scene_id)
@@ -87,6 +119,7 @@ def main():
     worker.turn_scene_off(scene_id=scene_id)
 
     worker.ws_close()
+
 
 if __name__ == "__main__":
     main()
