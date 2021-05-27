@@ -8,8 +8,12 @@ import json
 import logging
 import datetime
 import socket
+from typing import Tuple
+
 import requests
 import websocket
+
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -208,11 +212,11 @@ class Casambi:
         #    raise CasambiApiException(reason)
         if 'wireStatus' in data and data['wireStatus'] == 'openWireSucceed':
             return True
-        elif (('method' in data) and (data['method'] == 'peerChanged')) and \
+
+        if (('method' in data) and (data['method'] == 'peerChanged')) and \
             (('wire' in data) and (data['wire'] == self.wire_id)) and \
                 (('online' in data) and data['online']):
             return True
-
         return False
 
     def turn_unit_off(self, *, unit_id: int):
@@ -358,7 +362,8 @@ class Casambi:
             _LOGGER.debug(dbg_msg)
 
         # Get min and max temperature color in kelvin
-        (cct_min, cct_max, _) = self.get_supported_color_temperature()
+        (cct_min, cct_max, _) = \
+            self.get_supported_color_temperature(unit_id=unit_id)
         if target_value < cct_min:
             dbg_msg = 'set_unit_color_temperature '
             dbg_msg += f"target_value: {target_value}"
@@ -406,33 +411,36 @@ class Casambi:
 
         self.web_sock.send(json.dumps(message))
 
-    def get_supported_color_temperature(self, *, unit_id: int) -> (int, int, float):
+    def get_supported_color_temperature(self, *, unit_id: int) -> \
+            Tuple[int, int, float]:
         '''
-        Return the supported color temperatures, (0, 0, 0) if nothing is supported
+        Return the supported color temperatures
+
+        Returns (0, 0, 0) if nothing is supported
         '''
-        min = 0
-        max = 0
+        cct_min = 0
+        cct_max = 0
         current = 0
 
         data = self.get_unit_state(unit_id=unit_id)
 
         if 'controls' not in data:
-            return (min, max, current)
+            return (cct_min, cct_max, current)
 
         for control in data['controls']:
             if isinstance(control, list):
                 for inner_control in control:
                     if 'type' in inner_control and \
                             inner_control['type'] == 'CCT':
-                        min = inner_control['min']
-                        max = inner_control['max']
+                        cct_min = inner_control['min']
+                        cct_max = inner_control['max']
                         current = inner_control['value']
             if 'type' in control and control['type'] == 'CCT':
-                min = control['min']
-                max = control['max']
+                cct_min = control['min']
+                cct_max = control['max']
                 current = control['value']
 
-        return (min, max, current)
+        return (cct_min, cct_max, current)
 
     def unit_supports_color_temperature(self, *,
                                         unit_id: int) -> bool:
