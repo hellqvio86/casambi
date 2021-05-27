@@ -4,6 +4,7 @@ import logging
 import time
 import sys
 import os
+import random
 
 from pprint import pprint, pformat
 sys.path.append(os.path.split(os.path.dirname(sys.argv[0]))[0])
@@ -103,6 +104,22 @@ def main():
         print(f"Turn unit: {unit_id} off!")
         worker.turn_unit_off(unit_id=unit_id)
         time.sleep(60)
+
+        if worker.unit_supports_color_temperature(unit_id=unit_id):
+            (min_color_temp, max_color_temp, _) = \
+                worker.get_supported_color_temperature(unit_id=unit_id)
+
+            color_temp = random.randint(min_color_temp, max_color_temp)
+            print(f"Setting unit: {unit_id} to Color temperature: {color_temp}")
+            worker.set_unit_color_temperature(unit_id=unit_id,
+                                              value=color_temp)
+            time.sleep(60)
+
+            print_unit_information(worker=worker, unit_id=unit_id)
+
+            print(f"Turn unit: {unit_id} off!")
+            worker.turn_unit_off(unit_id=unit_id)
+            time.sleep(60)
 
     unit_list = worker.get_unit_list()
 

@@ -343,6 +343,41 @@ class Casambi:
         '''
         Setter for unit color temperature (kelvin)
         '''
+        target_value = value
+        if source == 'mired':
+            # Convert to Kelvin
+            target_value = round(1000000 / value)
+
+        # Convert to nerest 50 in kelvin, like the gui is doing
+        if target_value % 50 != 0:
+            target_value = int(target_value/50)*50+50
+
+            dbg_msg = 'set_unit_color_temperature '
+            dbg_msg += f"converting target value to {target_value}"
+            dbg_msg += ' (nearest 50 kelvin like GUI)'
+            _LOGGER.debug(dbg_msg)
+
+        # Get min and max temperature color in kelvin
+        (cct_min, cct_max, _) = self.get_supported_color_temperature()
+        if target_value < cct_min:
+            dbg_msg = 'set_unit_color_temperature '
+            dbg_msg += f"target_value: {target_value}"
+            dbg_msg += ' smaller than min supported temperature,'
+            dbg_msg += ' setting to min supported color temperature:'
+            dbg_msg += f" {cct_min}"
+            _LOGGER.debug(dbg_msg)
+
+            target_value = cct_min
+        elif target_value > cct_max:
+            dbg_msg = 'set_unit_color_temperature '
+            dbg_msg += f"target_value: {target_value}"
+            dbg_msg += ' larger than max supported temperature,'
+            dbg_msg += ' setting to max supported color temperature:'
+            dbg_msg += f" {cct_max}"
+            _LOGGER.debug(dbg_msg)
+
+            target_value = cct_max
+
         # Unit_id needs to be an integer
         if isinstance(unit_id, int):
             pass
@@ -358,8 +393,8 @@ class Casambi:
             raise CasambiApiException('No websocket connection!')
 
         target_controls = {
-            'ColorTemperature': {'value': value},
-            'Colorsource': {'source': source}
+            'ColorTemperature': {'value': target_value},
+            'Colorsource': {'source': 'TW'}
         }
 
         message = {
@@ -370,6 +405,34 @@ class Casambi:
         }
 
         self.web_sock.send(json.dumps(message))
+
+    def get_supported_color_temperature(self, *, unit_id: int) -> (int, int, float):
+        '''
+        Return the supported color temperatures, (0, 0, 0) if nothing is supported
+        '''
+        min = 0
+        max = 0
+        current = 0
+
+        data = self.get_unit_state(unit_id=unit_id)
+
+        if 'controls' not in data:
+            return (min, max, current)
+
+        for control in data['controls']:
+            if isinstance(control, list):
+                for inner_control in control:
+                    if 'type' in inner_control and \
+                            inner_control['type'] == 'CCT':
+                        min = inner_control['min']
+                        max = inner_control['max']
+                        current = inner_control['value']
+            if 'type' in control and control['type'] == 'CCT':
+                min = control['min']
+                max = control['max']
+                current = control['value']
+
+        return (min, max, current)
 
     def unit_supports_color_temperature(self, *,
                                         unit_id: int) -> bool:
