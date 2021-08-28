@@ -9,6 +9,7 @@ import logging
 import datetime
 import socket
 from typing import Tuple
+from colorsys import rgb_to_hsv
 
 import requests
 import websocket
@@ -340,6 +341,89 @@ class Casambi:
 
         self.web_sock.send(json.dumps(message))
 
+    def set_unit_rgbw_color(self, *,
+                                unit_id: int,
+                                color_value: Tuple[int, int, int, int]):
+        '''
+        Setter for RGB color
+        '''
+        target_controls = None
+        (red, green, blue, white) = color_value
+
+        if isinstance(unit_id, int):
+            pass
+        elif isinstance(unit_id, str):
+            unit_id = int(unit_id)
+        elif isinstance(unit_id, float):
+            unit_id = int(unit_id)
+        else:
+            raise CasambiApiException(
+                "expected unit_id to be an integer, got: {}".format(unit_id))
+
+        if not self.web_sock:
+            raise CasambiApiException('No websocket connection!')
+
+        white_value = white / 255.0
+        # 'name': 'white', 'type': 'White', 'value': 0.0
+        target_controls = {
+            'RGB': {'rgb': f"rgb({red}, {green}, {blue})"},
+            'Colorsource': {'source': 'RGB'},
+            'White': {'value': white_value},
+        }
+
+        message = {
+            "wire": self.wire_id,
+            "method": 'controlUnit',
+            "id": unit_id,
+            "targetControls": target_controls
+        }
+
+        self.web_sock.send(json.dumps(message))
+
+    def set_unit_rgb_color(self, *,
+                                unit_id: int,
+                                color_value: Tuple[int, int, int],
+                                send_rgb_format=False):
+        '''
+        Setter for RGB color
+        '''
+        target_controls = None
+        (red, green, blue) = color_value
+        (hue, sat, value) = rgb_to_hsv(red, green, blue)
+
+        if isinstance(unit_id, int):
+            pass
+        elif isinstance(unit_id, str):
+            unit_id = int(unit_id)
+        elif isinstance(unit_id, float):
+            unit_id = int(unit_id)
+        else:
+            raise CasambiApiException(
+                "expected unit_id to be an integer, got: {}".format(unit_id))
+
+        if not self.web_sock:
+            raise CasambiApiException('No websocket connection!')
+
+        if not send_rgb_format:
+            target_controls = {
+                'RGB': {'hue': round(hue, 1), 'sat': round(sat, 1)},
+                'Colorsource': {'source': 'RGB'}
+            }
+        else:
+            target_controls = {
+                'RGB': {'rgb': f"rgb({red}, {green}, {blue})"},
+                'Colorsource': {'source': 'RGB'}
+            }
+
+        message = {
+            "wire": self.wire_id,
+            "method": 'controlUnit',
+            "id": unit_id,
+            "targetControls": target_controls
+        }
+
+        self.web_sock.send(json.dumps(message))
+
     def set_unit_color_temperature(self, *,
                                    unit_id: int,
                                    value: int,
@@ -441,6 +525,106 @@ class Casambi:
                 current = control['value']
 
         return (cct_min, cct_max, current)
+
+    def unit_supports_rgbw(self, *, unit_id: int) -> bool:
+        '''
+        Returns true if unit supports color temperature
+
+        {
+            'activeSceneId': 0,
+            'address': 'ffffff',
+            'condition': 0,
+            'controls': [[{'name': 'dimmer0', 'type': 'Dimmer', 'value': 0.0},
+                        {'hue': 0.9882697947214076,
+                            'name': 'rgb',
+                            'rgb': 'rgb(255, 21, 40)',
+                            'sat': 0.9176470588235294,
+                            'type': 'Color'},
+                        {'name': 'white', 'type': 'White', 'value': 0.0}]],
+            'dimLevel': 0.0,
+            'firmwareVersion': '26.24',
+            'fixtureId': 4027,
+            'groupId': 0,
+            'id': 14,
+            'name': 'Test RGB',
+            'on': True,
+            'online': True,
+            'position': 10,
+            'priority': 3,
+            'status': 'ok',
+            'type': 'Luminaire'}
+
+        '''
+
+        data = self.get_unit_state(unit_id=unit_id)
+        color = False
+        white = False
+
+        if 'controls' not in data:
+            return False
+
+        for control in data['controls']:
+            if isinstance(control, list):
+                for inner_control in control:
+                    if 'type' in inner_control and \
+                            inner_control['type'] == 'Color':
+                        color = True
+                    elif 'type' in inner_control and \
+                            inner_control['type'] == 'White':
+                        white = True
+            if 'type' in control and control['type'] == 'Color':
+                color = True
+            elif 'type' in control and control['type'] == 'White':
+                white = True
+
+        if color and white:
+            return True
+        return False
+
+    def unit_supports_rgb(self, *, unit_id: int) -> bool:
+        '''
+        Returns true if unit supports color temperature
+
+        {
+            'activeSceneId': 0,
+            'address': 'ffffff',
+            'condition': 0,
+            'controls': [[{'name': 'dimmer0', 'type': 'Dimmer', 'value': 0.0},
+                        {'hue': 0.9882697947214076,
+                            'name': 'rgb',
+                            'rgb': 'rgb(255, 21, 40)',
+                            'sat': 0.9176470588235294,
+                            'type': 'Color'},
+                        {'name': 'white', 'type': 'White', 'value': 0.0}]],
+            'dimLevel': 0.0,
+            'firmwareVersion': '26.24',
+            'fixtureId': 4027,
+            'groupId': 0,
+            'id': 14,
+            'name': 'Test RGB',
+            'on': True,
+            'online': True,
+            'position': 10,
+            'priority': 3,
+            'status': 'ok',
+            'type': 'Luminaire'}
+
+        '''
+
+        data = self.get_unit_state(unit_id=unit_id)
+
+        if 'controls' not in data:
+            return False
+
+        for control in data['controls']:
+            if isinstance(control, list):
+                for inner_control in control:
+                    if 'type' in inner_control and \
+                            inner_control['type'] == 'Color':
+                        return True
+            if 'type' in control and control['type'] == 'Color':
+                return True
+        return False
 
     def unit_supports_color_temperature(self, *,
                                         unit_id: int) -> bool:

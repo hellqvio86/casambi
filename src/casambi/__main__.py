@@ -50,8 +50,11 @@ def print_unit_information(*, worker: casambi.Casambi, unit_id: int):
     msg += f"\n{pformat(data)}\n"
     print(msg)
 
-    supports_color = worker.unit_supports_color_temperature(unit_id=unit_id)
-    print(f"Does unit support color: {supports_color}")
+    supports_color_temperature = worker.unit_supports_color_temperature(unit_id=unit_id)
+    print(f"Does unit support color temperature: {supports_color_temperature}")
+
+    supports_rgb = worker.unit_supports_rgb(unit_id=unit_id)
+    print(f"Does unit support rgb: {supports_rgb}")
 
 
 def main():
@@ -113,6 +116,20 @@ def main():
             print(f"Setting unit: {unit_id} to Color temperature: {color_temp}")
             worker.set_unit_color_temperature(unit_id=unit_id,
                                               value=color_temp)
+            time.sleep(60)
+
+            print_unit_information(worker=worker, unit_id=unit_id)
+
+            print(f"Turn unit: {unit_id} off!")
+            worker.turn_unit_off(unit_id=unit_id)
+            time.sleep(60)
+        if worker.unit_supports_rgb(unit_id=unit_id):
+            red = random.randint(0, 255)
+            green = random.randint(0, 255)
+            blue = random.randint(0, 255)
+            print(f"RGB Setting unit: {unit_id} to Color ({red},  {green}, {blue})")
+            worker.set_unit_rgb_color(unit_id=unit_id,
+                                              color_value=(red, green, blue))
             time.sleep(60)
 
             print_unit_information(worker=worker, unit_id=unit_id)
