@@ -1,0 +1,9 @@
+---
+api_key: '<API KEY HERE>'
+email: '<EMAIL HERE>'
+network_password:  '<NETWORK PASSWORD HERE>'
+user_password: '<USER PASSWORD HERE>'
+# Units to tests
+unit_id: 14
+units:
+  - 14
