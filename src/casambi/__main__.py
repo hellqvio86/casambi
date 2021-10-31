@@ -7,6 +7,7 @@ import os
 import random
 
 from pprint import pprint, pformat
+
 sys.path.append(os.path.split(os.path.dirname(sys.argv[0]))[0])
 
 try:
@@ -18,23 +19,23 @@ except ModuleNotFoundError as err:
 logging.basicConfig(level=logging.DEBUG)
 
 
-def parse_config(config_file='casambi.yaml'):
+def parse_config(config_file="casambi.yaml"):
     config = None
 
-    with open(config_file, 'r') as stream:
+    with open(config_file, "r") as stream:
         config = yaml.safe_load(stream)
 
-    if 'api_key' not in config:
-        raise ConfigException('api_key is not present in configuration')
+    if "api_key" not in config:
+        raise ConfigException("api_key is not present in configuration")
 
-    if 'email' not in config:
-        raise ConfigException('email is not present in configuration')
+    if "email" not in config:
+        raise ConfigException("email is not present in configuration")
 
-    if 'network_password' not in config:
-        raise ConfigException('api_key is not present in configuration')
+    if "network_password" not in config:
+        raise ConfigException("api_key is not present in configuration")
 
-    if 'user_password' not in config:
-        raise ConfigException('api_key is not present in configuration')
+    if "user_password" not in config:
+        raise ConfigException("api_key is not present in configuration")
 
     return config
 
@@ -61,22 +62,22 @@ def main():
     verbose = True
     config = parse_config()
 
-    api_key = config['api_key']
-    email = config['email']
-    network_password = config['network_password']
-    user_password = config['user_password']
+    api_key = config["api_key"]
+    email = config["email"]
+    network_password = config["network_password"]
+    user_password = config["user_password"]
     units = []
     scene_id = 1
     unit_id = 1
 
-    if 'unit_id' in config:
-        unit_id = config['unit_id']
+    if "unit_id" in config:
+        unit_id = config["unit_id"]
 
-    if 'scene_id' in config:
-        scene_id = config['scene_id']
+    if "scene_id" in config:
+        scene_id = config["scene_id"]
 
-    if 'units' in config:
-        units = config['units']
+    if "units" in config:
+        units = config["units"]
 
     if verbose:
         print("main: config: {}".format(config))
@@ -85,7 +86,7 @@ def main():
         api_key=api_key,
         email=email,
         user_password=user_password,
-        network_password=network_password
+        network_password=network_password,
     )
 
     worker.create_user_session()
@@ -109,13 +110,15 @@ def main():
         time.sleep(60)
 
         if worker.unit_supports_color_temperature(unit_id=unit_id):
-            (min_color_temp, max_color_temp, _) = \
-                worker.get_supported_color_temperature(unit_id=unit_id)
+            (
+                min_color_temp,
+                max_color_temp,
+                _,
+            ) = worker.get_supported_color_temperature(unit_id=unit_id)
 
             color_temp = random.randint(min_color_temp, max_color_temp)
             print(f"Setting unit: {unit_id} to Color temperature: {color_temp}")
-            worker.set_unit_color_temperature(unit_id=unit_id,
-                                              value=color_temp)
+            worker.set_unit_color_temperature(unit_id=unit_id, value=color_temp)
             time.sleep(60)
 
             print_unit_information(worker=worker, unit_id=unit_id)
@@ -128,8 +131,7 @@ def main():
             green = random.randint(0, 255)
             blue = random.randint(0, 255)
             print(f"RGB Setting unit: {unit_id} to Color ({red},  {green}, {blue})")
-            worker.set_unit_rgb_color(unit_id=unit_id,
-                                              color_value=(red, green, blue))
+            worker.set_unit_rgb_color(unit_id=unit_id, color_value=(red, green, blue))
             time.sleep(60)
 
             print_unit_information(worker=worker, unit_id=unit_id)
