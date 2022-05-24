@@ -37,7 +37,7 @@ class Casambi:
 
         self.connected = False
         self.network_id = None
-        self.user_session_id = None
+        self._session_id = None
 
         self.wire_id = wire_id
         self.api_key = api_key
@@ -66,7 +66,7 @@ class Casambi:
 
         data = response.json()
 
-        self.user_session_id = data["sessionId"]
+        self._session_id = data["sessionId"]
 
         return data["sessionId"]
 
@@ -94,6 +94,7 @@ class Casambi:
         data = response.json()
 
         self.network_id = list(data.keys())[0]
+        self._session_id = data[self._network_id]["sessionId"]
 
         return data.keys()
 
@@ -107,7 +108,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -139,7 +140,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -186,7 +187,7 @@ class Casambi:
         message = {
             "method": "open",
             "id": self.network_id,
-            "session": self.user_session_id,
+            "session": self._session_id,
             "ref": reference,
             "wire": self.wire_id,  # wire id
             "type": 1,  # Client type, use value 1 (FRONTEND)
@@ -741,7 +742,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -773,7 +774,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -804,7 +805,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -834,7 +835,7 @@ class Casambi:
 
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
@@ -864,7 +865,7 @@ class Casambi:
         """
         headers = {
             "X-Casambi-Key": self.api_key,
-            "X-Casambi-Session": self.user_session_id,
+            "X-Casambi-Session": self._session_id,
             "Content-type": "application/json",
         }
 
