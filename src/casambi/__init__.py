@@ -8,6 +8,7 @@ import json
 import logging
 import datetime
 import socket
+from pprint import pformat
 from typing import Tuple
 from colorsys import rgb_to_hsv
 
@@ -67,6 +68,8 @@ class Casambi:
         data = response.json()
 
         self._session_id = data["sessionId"]
+
+        logging.debug(f"data from create_user_session: {pformat(data)}")
 
         return data["sessionId"]
 
