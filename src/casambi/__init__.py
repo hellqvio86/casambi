@@ -94,7 +94,7 @@ class Casambi:
         data = response.json()
 
         self.network_id = list(data.keys())[0]
-        self._session_id = data[self._network_id]["sessionId"]
+        self._session_id = data[self.network_id]["sessionId"]
 
         return data.keys()
 
