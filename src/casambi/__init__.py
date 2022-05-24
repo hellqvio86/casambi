@@ -68,6 +68,7 @@ class Casambi:
         data = response.json()
 
         self._session_id = data["sessionId"]
+        self.network_id = data["networks"][list(data["networks"].keys())[0]]["id"]
 
         logging.debug(f"data from create_user_session: {pformat(data)}")
 
