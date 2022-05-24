@@ -737,6 +737,9 @@ class Casambi:
         """
         Getter for unit lists
         """
+        if not self.network_id:
+            raise CasambiApiException("network_id is not set!")
+
         url = "https://door.casambi.com/v1/networks/"
         url += f"{self.network_id}/units"
 
