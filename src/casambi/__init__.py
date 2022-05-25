@@ -70,7 +70,7 @@ class Casambi:
         self._session_id = data["sessionId"]
         self.network_id = data["networks"][list(data["networks"].keys())[0]]["id"]
 
-        logging.debug(f"data from create_user_session: {pformat(data)}")
+        _LOGGER.debug(f"data from create_user_session: {pformat(data)}")
 
         return data["sessionId"]
 
@@ -110,6 +110,9 @@ class Casambi:
 
         url = f"https://door.casambi.com/v1/networks/{self.network_id}"
 
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
+
         headers = {
             "X-Casambi-Key": self.api_key,
             "X-Casambi-Session": self._session_id,
@@ -141,6 +144,9 @@ class Casambi:
 
         url = "https://door.casambi.com/v1/networks/"
         url += f"{self.network_id}/units/{unit_id}/state"
+
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
 
         headers = {
             "X-Casambi-Key": self.api_key,
@@ -187,6 +193,12 @@ class Casambi:
         url = "wss://door.casambi.com/v1/bridge/"
 
         reference = "{}".format(uuid.uuid1())
+
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
+
+        if not self.network_id:
+            raise CasambiApiException("Network id needs to be set!")
 
         message = {
             "method": "open",
@@ -779,6 +791,9 @@ class Casambi:
         url = "https://door.casambi.com/v1/networks/"
         url += f"{self.network_id}/scenes"
 
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
+
         headers = {
             "X-Casambi-Key": self.api_key,
             "X-Casambi-Session": self._session_id,
@@ -810,6 +825,9 @@ class Casambi:
 
         url = f"https://door.casambi.com/v1/fixtures/{unit_id}"
 
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
+
         headers = {
             "X-Casambi-Key": self.api_key,
             "X-Casambi-Session": self._session_id,
@@ -839,6 +857,9 @@ class Casambi:
         Getter for network state
         """
         url = f"https://door.casambi.com/v1/networks/{self.network_id}/state"
+
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
 
         headers = {
             "X-Casambi-Key": self.api_key,
@@ -870,6 +891,10 @@ class Casambi:
         from: yyyyMMdd[hh[mm[ss]]]
         to: yyyyMMdd[hh[mm[ss]]]
         """
+
+        if not self._session_id:
+            raise CasambiApiException("No session id is set. Need to login!")
+
         headers = {
             "X-Casambi-Key": self.api_key,
             "X-Casambi-Session": self._session_id,
