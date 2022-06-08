@@ -299,6 +299,48 @@ class Casambi:
 
         self.web_sock.send(json.dumps(message))
 
+    def set_unit_vertical(self, *, unit_id: int, value: float):
+        """
+        Support for setting vertical (dual led value)
+        """
+        target_value = value
+
+        # Unit_id needs to be an integer
+        if isinstance(unit_id, int):
+            pass
+        elif isinstance(unit_id, str):
+            unit_id = int(unit_id)
+        elif isinstance(unit_id, float):
+            unit_id = int(unit_id)
+        else:
+            raise CasambiApiException(
+                f"expected unit_id to be an integer, got: {unit_id}"
+            )
+
+        # Unit_id needs to be an integer
+        if isinstance(value, float):
+            target_value = float(value)
+
+        if not self.web_sock:
+            raise CasambiApiException("No websocket connection!")
+
+        if target_value < 0.0:
+            raise CasambiApiException("Value needs to be between 0 and 1")
+
+        if target_value > 1.0:
+            raise CasambiApiException("Value needs to be between 0 and 1")
+
+        target_controls = {"Vertical": {"value": target_value}}
+
+        message = {
+            "wire": self.wire_id,
+            "method": "controlUnit",
+            "id": unit_id,
+            "targetControls": target_controls,
+        }
+
+        self.web_sock.send(json.dumps(message))
+
     def set_unit_target_controls(self, *, unit_id, target_controls):
         """
         Response on ok:
