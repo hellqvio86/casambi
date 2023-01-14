@@ -16,6 +16,8 @@ except ModuleNotFoundError as err:
     pprint(sys.path)
     raise err
 
+from casambi.exceptions import ConfigException
+
 logging.basicConfig(level=logging.DEBUG)
 
 
