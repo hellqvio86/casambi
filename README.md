@@ -68,3 +68,9 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Disclaimer
 This library is neither affiliated with nor endorsed by Casambi.
+
+<p align="right">
+  <a href="https://www.buymeacoffee.com/olofhellqvc">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48">
+  </a>
+</p>
