@@ -5,7 +5,10 @@ import json
 
 from pprint import pprint, pformat
 
-from private_casambi_api import Casambi
+try:
+    from .private_casambi_api import Casambi
+except ImportError:
+    from private_casambi_api import Casambi
 
 logging.basicConfig(level=logging.DEBUG)
 

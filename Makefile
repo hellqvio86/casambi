@@ -1,10 +1,16 @@
-.PHONY: help hooks secrets trivy all
+.PHONY: help hooks test coverage-badge secrets trivy all
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Available targets:'
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+test: ## Run unit tests with coverage
+	PYTHONPATH=src uv run --with pytest --with pytest-cov --with pyyaml --with requests pytest --cov=casambi --cov-fail-under=80 --cov-report=term-missing --cov-report=json tests/
+
+coverage-badge: test ## Generate coverage.svg badge from coverage report
+	uv run python3 .github/scripts/generate_coverage_badge.py
 
 hooks: ## Install git pre-commit hook
 	@chmod +x .githooks/pre-commit 2>/dev/null || true

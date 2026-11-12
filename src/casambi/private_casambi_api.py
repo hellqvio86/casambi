@@ -10,8 +10,12 @@ from datetime import datetime
 
 import requests
 
-from exceptions import CasambiApiException
-from consts import DEVICE_NAME
+try:
+    from .exceptions import CasambiApiException
+    from .consts import DEVICE_NAME
+except ImportError:
+    from exceptions import CasambiApiException
+    from consts import DEVICE_NAME
 
 _LOGGER = logging.getLogger(__name__)
 

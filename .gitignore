@@ -1,2 +1,15 @@
 casambi.yaml
 dist
+build
+*.egg-info
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.coverage
+coverage.xml
+coverage.json
+htmlcov/
+bin/

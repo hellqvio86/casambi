@@ -1,4 +1,4 @@
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/casambi) ![PyPI](https://img.shields.io/pypi/v/casambi) ![GitHub](https://img.shields.io/github/license/hellqvio86/casambi) ![GitHub issues](https://img.shields.io/github/issues-raw/hellqvio86/casambi) ![GitHub last commit](https://img.shields.io/github/last-commit/hellqvio86/casambi) ![PyPI - Downloads](https://img.shields.io/pypi/dm/casambi)
+[![CI](https://github.com/hellqvio86/casambi/actions/workflows/ci.yml/badge.svg)](https://github.com/hellqvio86/casambi/actions/workflows/ci.yml) [![Coverage](coverage.svg)](https://github.com/hellqvio86/casambi/actions/workflows/ci.yml) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/casambi) ![PyPI](https://img.shields.io/pypi/v/casambi) ![GitHub](https://img.shields.io/github/license/hellqvio86/casambi) ![GitHub issues](https://img.shields.io/github/issues-raw/hellqvio86/casambi) ![GitHub last commit](https://img.shields.io/github/last-commit/hellqvio86/casambi) ![PyPI - Downloads](https://img.shields.io/pypi/dm/casambi)
 
 # Python library for controlling Casambi lights
 
